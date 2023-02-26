@@ -1,43 +1,64 @@
-// Copyright © 2022 Christian R. Vozar ⚜
+// Copyright © 2022-2023 Christian R. Vozar ⚜
 // Licensed under the MIT License. All rights reserved.
 
 package criprof
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
-	"strings"
 )
 
+// Detectable image formats
 const (
-	formatDocker       = "docker"
-	formatACI          = "aci"
-	formatCRI          = "cri"
-	formatOCF          = "ocf"
-	formatUndetermined = "undetermined"
+	formatDocker       = "docker"       // Docker image format
+	formatACI          = "aci"          // App Container Image format
+	formatCRI          = "cri"          // Container Runtime Interface format
+	formatOCF          = "ocf"          // Open Container Format
+	formatUndetermined = "undetermined" // Undetermined image format
 )
 
-func getImageFormat() string {
-	if _, err := os.Stat("/.dockerinit"); err == nil {
-		return formatDocker
+// getImageFormat returns the format of the container image currently running.
+func getImageFormat() (string, error) {
+	// Check if Docker format
+	if _, err := isDockerFormat(); err == nil {
+		return formatDocker, nil
 	}
 
-	if _, err := os.Stat("/.dockerenv"); err == nil {
-		return formatDocker
+	// Check if /run/.containerenv file exists hinting CRI image.
+	if _, err := os.Stat("/run/.containerenv"); err == nil {
+		return formatCRI, nil
+	} else if !os.IsNotExist(err) {
+		return "", fmt.Errorf("failed to check /run/.containerenv file: %v", err)
 	}
 
-	cgroup, _ := ioutil.ReadFile("/proc/self/cgroup")
-	if strings.Contains(string(cgroup), "docker") {
-		return formatDocker
-	}
-
+	// Check if AC_METADATA_URL environment variable is set hinting ACI image.
 	if _, ok := EnvironmentVariables["AC_METADATA_URL"]; ok {
-		return formatACI
+		return formatACI, nil
 	}
 
+	// Check if AC_APP_NAME environment variable is set hinting ACI image.
 	if _, ok := EnvironmentVariables["AC_APP_NAME"]; ok {
-		return formatACI
+		return formatACI, nil
 	}
 
-	return formatUndetermined
+	// Undetermined format.
+	return formatUndetermined, nil
+}
+
+func isDockerFormat() (bool, error) {
+	_, err := os.Stat("/.dockerinit")
+	if err == nil {
+		return true, nil
+	} else if !os.IsNotExist(err) {
+		return false, fmt.Errorf("failed to check /.dockerinit file: %v", err)
+	}
+
+	_, err = os.Stat("/.dockerenv")
+	if err == nil {
+		return true, nil
+	} else if !os.IsNotExist(err) {
+		return false, fmt.Errorf("failed to check /.dockerenv file: %v", err)
+	}
+
+	return false, nil
 }
