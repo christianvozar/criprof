@@ -4,6 +4,7 @@
 package criprof
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -51,10 +52,13 @@ func getContainerID() string {
 	return "undetermined"
 }
 
-func getHostname() string {
-	if _, ok := EnvironmentVariables["HOSTNAME"]; ok {
-		return EnvironmentVariables["HOSTNAME"]
+// getHostname returns the DNS hostname of the system.
+func getHostname() (string, error) {
+	// Use the os package to get the hostname of the system.
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "", fmt.Errorf("failed to get hostname: %v", err)
 	}
 
-	return "undetermined"
+	return hostname, nil
 }

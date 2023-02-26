@@ -1,4 +1,4 @@
-// Copyright © 2022 Christian R. Vozar ⚜
+// Copyright © 2022-2023 Christian R. Vozar
 // Licensed under the MIT License. All rights reserved.
 
 package main

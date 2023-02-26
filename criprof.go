@@ -1,4 +1,4 @@
-// Copyright © 2022 Christian R. Vozar ⚜
+// Copyright © 2022-2023 Christian R. Vozar
 // Licensed under the MIT License. All rights reserved.
 
 package criprof
@@ -29,10 +29,13 @@ type Inventory struct {
 
 // New returns a new Inventory with populated values.
 func New() *Inventory {
+	f, _ := getImageFormat()
+	h, _ := getHostname()
+
 	return &Inventory{
-		Hostname:    getHostname(),
+		Hostname:    h,
 		ID:          getContainerID(),
-		ImageFormat: getImageFormat(),
+		ImageFormat: f,
 		PID:         os.Getpid(),
 		Runtime:     getRuntime(),
 		Scheduler:   getScheduler(),
