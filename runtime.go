@@ -18,6 +18,7 @@ const (
 	runtimeLXC          = "lxc"          // LXC (Linux Containers)
 	runtimeLXD          = "lxd"          // LXD (containerd + LXC)
 	runtimeOpenVZ       = "openvz"       // OpenVZ
+	runtimeWASM         = "wasm"         // Web Assembly
 	runtimeUndetermined = "undetermined" // Undetermined
 )
 
@@ -64,6 +65,10 @@ func getRuntime() string {
 		return runtimeOpenVZ
 	}
 
+	if isWASM() {
+		return runtimeWASM
+	}
+
 	// If none of the above checks pass, return an undetermined runtime.
 	return runtimeUndetermined
 }
@@ -72,6 +77,15 @@ func getRuntime() string {
 func isOpenVZ() bool {
 	// Check if the /proc/vz directory exists.
 	if _, err := os.Stat("/proc/vz"); err == nil {
+		return true
+	}
+
+	return false
+}
+
+// isWasm returns true if the program is running inside a WebAssembly environment
+func isWASM() bool {
+	if (os.Getenv("GOOS") == "js") && (os.Getenv("GOARCH") == "wasm") {
 		return true
 	}
 
