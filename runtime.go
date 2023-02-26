@@ -60,6 +60,20 @@ func getRuntime() string {
 		return runtimeLXD
 	}
 
+	if isOpenVZ() {
+		return runtimeOpenVZ
+	}
+
 	// If none of the above checks pass, return an undetermined runtime.
 	return runtimeUndetermined
+}
+
+// isOpenVZ returns true if the program is running inside an OpenVZ container.
+func isOpenVZ() bool {
+	// Check if the /proc/vz directory exists.
+	if _, err := os.Stat("/proc/vz"); err == nil {
+		return true
+	}
+
+	return false
 }
