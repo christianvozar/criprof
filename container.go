@@ -10,8 +10,28 @@ import (
 	"regexp"
 )
 
-// IsContainer returns true if the application is running within a container
-// runtime/engine.
+// IsContainer determines whether the current application is running inside a
+// container runtime or engine.
+//
+// This function uses multiple detection methods to identify container environments:
+//   - Checks for the presence of /.dockerinit file (legacy Docker)
+//   - Checks for the presence of /.dockerenv file (Docker)
+//   - Inspects /proc/self/cgroup for container-specific cgroup entries
+//
+// The function returns true if any of these container indicators are found.
+// It is safe to call in any environment and will return false when running on
+// bare metal or in a virtual machine without container isolation.
+//
+// Example:
+//
+//	if criprof.IsContainer() {
+//	    fmt.Println("Running in a container")
+//	} else {
+//	    fmt.Println("Running on bare metal or VM")
+//	}
+//
+// Returns:
+//   - true if running inside a container, false otherwise
 func IsContainer() bool {
 	if _, err := os.Stat("/.dockerinit"); err == nil {
 		return true
@@ -28,6 +48,15 @@ func IsContainer() bool {
 	return false
 }
 
+// getContainerID extracts the container identifier from cgroup information.
+// This is an unexported function used internally by the Inventory type.
+//
+// The function attempts to parse /proc/self/cgroup to extract container IDs
+// using regular expressions that match common container runtime patterns:
+//   - Standard Docker format: cpu:/docker/[container-id]
+//   - CoreOS format: cpuset:/system.slice/docker-[container-id]
+//
+// Returns "undetermined" if the container ID cannot be extracted.
 func getContainerID() string {
 	dockerIDMatch := regexp.MustCompile(`cpu\:\/docker\/([0-9a-z]+)`)
 	coreOSIDMatch := regexp.MustCompile(`cpuset\:\/system.slice\/docker-([0-9a-z]+)`)
@@ -53,6 +82,11 @@ func getContainerID() string {
 }
 
 // getHostname returns the DNS hostname of the system.
+// This is an unexported function used internally by the Inventory type.
+//
+// The function wraps os.Hostname() with additional error context.
+//
+// Returns the system hostname or an error if it cannot be determined.
 func getHostname() (string, error) {
 	// Use the os package to get the hostname of the system.
 	hostname, err := os.Hostname()

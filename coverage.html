@@ -1,0 +1,886 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/christianvozar/criprof/cmd/criprof/cmd/hints.go (0.0%)</option>
+				
+				<option value="file1">github.com/christianvozar/criprof/cmd/criprof/cmd/root.go (0.0%)</option>
+				
+				<option value="file2">github.com/christianvozar/criprof/cmd/criprof/cmd/version.go (0.0%)</option>
+				
+				<option value="file3">github.com/christianvozar/criprof/cmd/criprof/main.go (0.0%)</option>
+				
+				<option value="file4">github.com/christianvozar/criprof/container.go (47.8%)</option>
+				
+				<option value="file5">github.com/christianvozar/criprof/criprof.go (77.8%)</option>
+				
+				<option value="file6">github.com/christianvozar/criprof/image.go (40.9%)</option>
+				
+				<option value="file7">github.com/christianvozar/criprof/runtime.go (61.5%)</option>
+				
+				<option value="file8">github.com/christianvozar/criprof/scheduler.go (67.6%)</option>
+				
+				<option value="file9">github.com/christianvozar/criprof/util.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">// Copyright © 2022 Christian R. Vozar ⚜
+// Licensed under the MIT License. All rights reserved.
+package cmd
+
+import (
+        "fmt"
+
+        "github.com/christianvozar/criprof"
+
+        "github.com/spf13/cobra"
+)
+
+// hintsCmd represents the hints command
+var hintsCmd = &amp;cobra.Command{
+        Use:   "hints",
+        Short: "Display container runtime information",
+        Long:  `Display container runtime information`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                i := criprof.New()
+
+                fmt.Println(i.JSON())
+        }</span>,
+}
+
+func init() <span class="cov0" title="0">{
+        rootCmd.AddCommand(hintsCmd)
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+
+// Package cmd provides the command-line interface for criprof.
+//
+// This package implements the CLI commands using the Cobra framework, allowing
+// users to interact with criprof from the command line to detect and report
+// container runtime information.
+package cmd
+
+import (
+        "fmt"
+        "os"
+
+        "github.com/spf13/cobra"
+
+        homedir "github.com/mitchellh/go-homedir"
+        "github.com/spf13/viper"
+)
+
+var cfgFile string
+
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &amp;cobra.Command{
+        Use:   "criprof",
+        Short: "Container Runtime Interface profiling and introspection.",
+        Long:  `Container Runtime Interface profiling and introspection.`,
+        // Uncomment the following line if your bare application
+        // has an action associated with it:
+        //        Run: func(cmd *cobra.Command, args []string) { },
+}
+
+// Execute runs the root command and handles any errors that occur.
+//
+// This is the main entry point for the CLI application, called by main.main().
+// It executes the root command and all registered subcommands, processing
+// command-line flags and arguments.
+//
+// If an error occurs during command execution, it is printed to stdout and
+// the program exits with status code 1.
+func Execute() <span class="cov0" title="0">{
+        if err := rootCmd.Execute(); err != nil </span><span class="cov0" title="0">{
+                fmt.Println(err)
+                os.Exit(1)
+        }</span>
+}
+
+func init() <span class="cov0" title="0">{
+        cobra.OnInitialize(initConfig)
+
+        rootCmd.PersistentFlags().StringVar(&amp;cfgFile, "config", "", "config file (default is $HOME/.criprof.yaml)")
+
+        rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}</span>
+
+// initConfig reads configuration from file and environment variables.
+//
+// This function is called during Cobra initialization. It attempts to load
+// configuration from:
+//   - The config file specified by --config flag
+//   - $HOME/.criprof.yaml (default location)
+//   - Environment variables that match configuration keys
+//
+// If a config file is found and successfully loaded, its path is printed to stdout.
+func initConfig() <span class="cov0" title="0">{
+        if cfgFile != "" </span><span class="cov0" title="0">{
+                // Use config file from the flag.
+                viper.SetConfigFile(cfgFile)
+        }</span> else<span class="cov0" title="0"> {
+                // Find home directory.
+                home, err := homedir.Dir()
+                if err != nil </span><span class="cov0" title="0">{
+                        fmt.Println(err)
+                        os.Exit(1)
+                }</span>
+
+                // Search config in home directory with name ".criprof" (without extension).
+                <span class="cov0" title="0">viper.AddConfigPath(home)
+                viper.SetConfigName(".criprof")</span>
+        }
+
+        <span class="cov0" title="0">viper.AutomaticEnv() // read in environment variables that match
+
+        // If a config file is found, read it in.
+        if err := viper.ReadInConfig(); err == nil </span><span class="cov0" title="0">{
+                fmt.Println("Using config file:", viper.ConfigFileUsed())
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+package cmd
+
+import (
+        "fmt"
+
+        "github.com/spf13/cobra"
+)
+
+// versionCmd represents the version command
+var versionCmd = &amp;cobra.Command{
+        Use:   "version",
+        Short: "Print version information",
+        Long:  `Print version information`,
+        Run: func(cmd *cobra.Command, args []string) <span class="cov0" title="0">{
+                fmt.Println("criprof version 1.1")
+        }</span>,
+}
+
+func init() <span class="cov0" title="0">{
+        rootCmd.AddCommand(versionCmd)
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+
+// criprof is a command-line tool for Container Runtime Interface (CRI) profiling
+// and introspection.
+//
+// This CLI provides access to criprof functionality for detecting container runtimes,
+// orchestrators, and image formats from the command line. It's useful for shell scripts,
+// non-Go programs, and manual debugging of container environments.
+//
+// # Commands
+//
+//   criprof hints   - Display container runtime information as JSON
+//   criprof version - Print version information
+//
+// # Usage
+//
+//        criprof hints
+//
+// For more information, visit: https://github.com/christianvozar/criprof
+package main
+
+import "github.com/christianvozar/criprof/cmd/criprof/cmd"
+
+func main() <span class="cov0" title="0">{
+        cmd.Execute()
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">// Copyright © 2022 Christian R. Vozar ⚜
+// Licensed under the MIT License. All rights reserved.
+
+package criprof
+
+import (
+        "fmt"
+        "io/ioutil"
+        "os"
+        "regexp"
+)
+
+// IsContainer determines whether the current application is running inside a
+// container runtime or engine.
+//
+// This function uses multiple detection methods to identify container environments:
+//   - Checks for the presence of /.dockerinit file (legacy Docker)
+//   - Checks for the presence of /.dockerenv file (Docker)
+//   - Inspects /proc/self/cgroup for container-specific cgroup entries
+//
+// The function returns true if any of these container indicators are found.
+// It is safe to call in any environment and will return false when running on
+// bare metal or in a virtual machine without container isolation.
+//
+// Example:
+//
+//        if criprof.IsContainer() {
+//            fmt.Println("Running in a container")
+//        } else {
+//            fmt.Println("Running on bare metal or VM")
+//        }
+//
+// Returns:
+//   - true if running inside a container, false otherwise
+func IsContainer() bool <span class="cov8" title="1">{
+        if _, err := os.Stat("/.dockerinit"); err == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">if _, err := os.Stat("/.dockerenv"); err == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">if c := getContainerID(); c != "" </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        <span class="cov0" title="0">return false</span>
+}
+
+// getContainerID extracts the container identifier from cgroup information.
+// This is an unexported function used internally by the Inventory type.
+//
+// The function attempts to parse /proc/self/cgroup to extract container IDs
+// using regular expressions that match common container runtime patterns:
+//   - Standard Docker format: cpu:/docker/[container-id]
+//   - CoreOS format: cpuset:/system.slice/docker-[container-id]
+//
+// Returns "undetermined" if the container ID cannot be extracted.
+func getContainerID() string <span class="cov8" title="1">{
+        dockerIDMatch := regexp.MustCompile(`cpu\:\/docker\/([0-9a-z]+)`)
+        coreOSIDMatch := regexp.MustCompile(`cpuset\:\/system.slice\/docker-([0-9a-z]+)`)
+
+        if _, err := os.Stat("/proc/self/cgroup"); os.IsExist(err) </span><span class="cov0" title="0">{
+                cgroup, _ := ioutil.ReadFile("/proc/self/cgroup")
+                strCgroup := string(cgroup)
+                loc := dockerIDMatch.FindStringIndex(strCgroup)
+
+                if loc != nil </span><span class="cov0" title="0">{
+                        return strCgroup[loc[0]+12 : loc[1]-2]
+                }</span>
+
+                // cgroup not nil, not vanilla Docker. Check for CoreOS.
+                <span class="cov0" title="0">loc = coreOSIDMatch.FindStringIndex(strCgroup)
+
+                if loc != nil </span><span class="cov0" title="0">{
+                        return strCgroup[loc[0]+27:]
+                }</span>
+        }
+
+        <span class="cov8" title="1">return "undetermined"</span>
+}
+
+// getHostname returns the DNS hostname of the system.
+// This is an unexported function used internally by the Inventory type.
+//
+// The function wraps os.Hostname() with additional error context.
+//
+// Returns the system hostname or an error if it cannot be determined.
+func getHostname() (string, error) <span class="cov8" title="1">{
+        // Use the os package to get the hostname of the system.
+        hostname, err := os.Hostname()
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to get hostname: %v", err)
+        }</span>
+
+        <span class="cov8" title="1">return hostname, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+
+// Package criprof provides Container Runtime Interface (CRI) profiling and introspection.
+//
+// This library detects and identifies the container runtime environment, scheduler,
+// and image format in which an application is running. It uses environmental "hints"
+// to introspect the container runtime and provides structured information about the
+// executing environment.
+//
+// # Supported Container Runtimes
+//
+// The package can detect the following container runtimes:
+//   - Docker
+//   - rkt (CoreOS)
+//   - containerd
+//   - CRI-O
+//   - LXD
+//   - OpenVZ
+//   - WASM (WebAssembly)
+//   - RunC (Open Container Initiative)
+//
+// # Supported Orchestrators
+//
+// The package can detect the following orchestration platforms:
+//   - Kubernetes
+//   - Docker Swarm
+//   - HashiCorp Nomad
+//   - Apache Mesos
+//
+// # Supported Image Formats
+//
+// The package can detect the following container image formats:
+//   - Docker format
+//   - CRI (Container Runtime Interface) format
+//   - ACI (App Container Image) format
+//   - OCF (Open Container Format)
+//
+// # Usage
+//
+// Basic usage to detect container runtime information:
+//
+//        import "github.com/christianvozar/criprof"
+//
+//        func main() {
+//            // Create a new inventory of the container environment
+//            inventory := criprof.New()
+//
+//            // Access individual fields
+//            fmt.Printf("Runtime: %s\n", inventory.Runtime)
+//            fmt.Printf("Scheduler: %s\n", inventory.Scheduler)
+//
+//            // Export as JSON
+//            jsonData := inventory.JSON()
+//            fmt.Println(jsonData)
+//
+//            // Check if running in a container
+//            if criprof.IsContainer() {
+//                fmt.Println("Running in a container")
+//            }
+//        }
+//
+// # Detection Methods
+//
+// The library uses multiple detection methods including:
+//   - File system markers (e.g., /.dockerenv, /run/.containerenv)
+//   - Environment variables (e.g., KUBERNETES_SERVICE_HOST, NOMAD_TASK_DIR)
+//   - Process information (e.g., /proc/self/cgroup)
+//   - Network probes (e.g., Kubernetes API checks)
+//
+// All detection is non-invasive, read-only, and safe for production use.
+package criprof
+
+import (
+        "encoding/json"
+        "fmt"
+        "os"
+)
+
+// EnvironmentVariables is a cached map of all environment variables available at
+// package initialization time. This cache is populated once when the package is
+// imported to improve performance during runtime and scheduler detection.
+//
+// The map keys are environment variable names and values are their corresponding values.
+// This variable is exported to allow advanced users to inspect the cached environment
+// if needed for debugging purposes.
+var EnvironmentVariables map[string]string
+
+func init() <span class="cov8" title="1">{
+        EnvironmentVariables = environMap()
+}</span>
+
+// Inventory holds an application's container and runtime information.
+// It provides a comprehensive snapshot of the container environment including
+// runtime type, orchestration platform, and system identifiers.
+//
+// All fields are automatically populated when creating a new Inventory using New().
+// If a particular aspect cannot be determined, the corresponding field will contain
+// the value "undetermined" (for string fields) or system defaults (for other types).
+type Inventory struct {
+        // Hostname is the DNS hostname of the system running the container.
+        Hostname string `json:"hostname"`
+
+        // ID is the unique container identifier extracted from cgroup information.
+        // Returns "undetermined" if the container ID cannot be detected.
+        ID string `json:"id"`
+
+        // ImageFormat identifies the container image format (e.g., "docker", "cri", "aci").
+        // Returns "undetermined" if the format cannot be detected.
+        ImageFormat string `json:"image_format"`
+
+        // PID is the process ID of the current application.
+        PID int `json:"pid"`
+
+        // Runtime identifies the container runtime engine (e.g., "docker", "containerd", "rkt").
+        // Returns "undetermined" if the runtime cannot be detected.
+        Runtime string `json:"runtime"`
+
+        // Scheduler identifies the orchestration platform (e.g., "kubernetes", "nomad", "swarm").
+        // Returns "undetermined" if no orchestrator is detected.
+        Scheduler string `json:"scheduler"`
+}
+
+// New creates and returns a new Inventory with all fields automatically populated
+// based on the current container environment.
+//
+// This function performs comprehensive detection of the container runtime, orchestration
+// platform, image format, and system identifiers. Detection is non-invasive and uses
+// multiple hints including file system markers, environment variables, process information,
+// and network probes.
+//
+// The function will gracefully handle detection failures by setting undetermined values
+// rather than returning errors, making it safe to use in any environment.
+//
+// Example:
+//
+//        inventory := criprof.New()
+//        fmt.Printf("Runtime: %s\n", inventory.Runtime)
+//        fmt.Printf("Scheduler: %s\n", inventory.Scheduler)
+//        fmt.Printf("Container ID: %s\n", inventory.ID)
+//
+// Returns:
+//   - A pointer to a fully populated Inventory struct
+func New() *Inventory <span class="cov8" title="1">{
+        f, _ := getImageFormat()
+        h, _ := getHostname()
+
+        return &amp;Inventory{
+                Hostname:    h,
+                ID:          getContainerID(),
+                ImageFormat: f,
+                PID:         os.Getpid(),
+                Runtime:     getRuntime(),
+                Scheduler:   getScheduler(),
+        }
+}</span>
+
+// JSON serializes the Inventory to a JSON-formatted string.
+//
+// This method converts all inventory fields to JSON format, making it easy to
+// export container environment information for logging, diagnostics, or integration
+// with other tools.
+//
+// If JSON marshaling fails (which is extremely rare for this struct), an error
+// message is printed to stdout and an empty string is returned.
+//
+// Example:
+//
+//        inventory := criprof.New()
+//        jsonStr := inventory.JSON()
+//        fmt.Println(jsonStr)
+//        // Output: {"hostname":"web-server","id":"abc123","image_format":"docker","pid":1234,"runtime":"docker","scheduler":"kubernetes"}
+//
+// Returns:
+//   - A JSON-formatted string representation of the Inventory, or an empty string on error
+func (i Inventory) JSON() string <span class="cov8" title="1">{
+        j, err := json.Marshal(i)
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Println(err)
+                return ""
+        }</span>
+
+        <span class="cov8" title="1">return string(j)</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">// Copyright © 2022-2023 Christian R. Vozar ⚜
+// Licensed under the MIT License. All rights reserved.
+
+package criprof
+
+import (
+        "fmt"
+        "os"
+)
+
+// Detectable image formats
+const (
+        formatDocker       = "docker"       // Docker image format
+        formatACI          = "aci"          // App Container Image format
+        formatCRI          = "cri"          // Container Runtime Interface format
+        formatOCF          = "ocf"          // Open Container Format
+        formatUndetermined = "undetermined" // Undetermined image format
+)
+
+// getImageFormat returns the format of the container image currently running.
+func getImageFormat() (string, error) <span class="cov8" title="1">{
+        // Check if Docker format
+        if _, err := isDockerFormat(); err == nil </span><span class="cov8" title="1">{
+                return formatDocker, nil
+        }</span>
+
+        // Check if /run/.containerenv file exists hinting CRI image.
+        <span class="cov0" title="0">if _, err := os.Stat("/run/.containerenv"); err == nil </span><span class="cov0" title="0">{
+                return formatCRI, nil
+        }</span> else<span class="cov0" title="0"> if !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to check /run/.containerenv file: %v", err)
+        }</span>
+
+        // Check if AC_METADATA_URL environment variable is set hinting ACI image.
+        <span class="cov0" title="0">if _, ok := EnvironmentVariables["AC_METADATA_URL"]; ok </span><span class="cov0" title="0">{
+                return formatACI, nil
+        }</span>
+
+        // Check if AC_APP_NAME environment variable is set hinting ACI image.
+        <span class="cov0" title="0">if _, ok := EnvironmentVariables["AC_APP_NAME"]; ok </span><span class="cov0" title="0">{
+                return formatACI, nil
+        }</span>
+
+        // Undetermined format.
+        <span class="cov0" title="0">return formatUndetermined, nil</span>
+}
+
+func isDockerFormat() (bool, error) <span class="cov8" title="1">{
+        _, err := os.Stat("/.dockerinit")
+        if err == nil </span><span class="cov0" title="0">{
+                return true, nil
+        }</span> else<span class="cov8" title="1"> if !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                return false, fmt.Errorf("failed to check /.dockerinit file: %v", err)
+        }</span>
+
+        <span class="cov8" title="1">_, err = os.Stat("/.dockerenv")
+        if err == nil </span><span class="cov0" title="0">{
+                return true, nil
+        }</span> else<span class="cov8" title="1"> if !os.IsNotExist(err) </span><span class="cov0" title="0">{
+                return false, fmt.Errorf("failed to check /.dockerenv file: %v", err)
+        }</span>
+
+        <span class="cov8" title="1">return false, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+
+package criprof
+
+import (
+        "io/ioutil"
+        "os"
+        "strings"
+)
+
+// Detectable container runtimes.
+const (
+        runtimeDocker       = "docker"       // Docker
+        runtimeRkt          = "rkt"          // CoreOS rkt
+        runtimeRunC         = "runc"         // Open Container Initiative runc
+        runtimeContainerD   = "containerd"   // containerd
+        runtimeLXC          = "lxc"          // LXC (Linux Containers)
+        runtimeLXD          = "lxd"          // LXD (containerd + LXC)
+        runtimeOpenVZ       = "openvz"       // OpenVZ
+        runtimeWASM         = "wasm"         // Web Assembly
+        runtimeUndetermined = "undetermined" // Undetermined
+)
+
+// getRuntime returns the name of the container runtime that is currently running.
+func getRuntime() string <span class="cov8" title="1">{
+        // Check if the /.dockerinit file exists to detect a Docker runtime.
+        if _, err := os.Stat("/.dockerinit"); err == nil </span><span class="cov0" title="0">{
+                return runtimeDocker
+        }</span>
+
+        // Check if the /.dockerenv file exists to detect a Docker runtime.
+        <span class="cov8" title="1">if _, err := os.Stat("/.dockerenv"); err == nil </span><span class="cov0" title="0">{
+                return runtimeDocker
+        }</span>
+
+        // Check if /run/.containerenv file exists to detect a CRI-O or containerd
+        // runtime.
+        <span class="cov8" title="1">if _, err := os.Stat("/run/.containerenv"); err == nil </span><span class="cov0" title="0">{
+                return runtimeContainerD
+        }</span>
+
+        // Check the cgroup to detect a Docker runtime.
+        <span class="cov8" title="1">cgroup, _ := ioutil.ReadFile("/proc/self/cgroup")
+        if strings.Contains(string(cgroup), "docker") </span><span class="cov0" title="0">{
+                return runtimeDocker
+        }</span>
+
+        // Check if the AC_METADATA_URL environment variable is set to detect an rkt runtime.
+        <span class="cov8" title="1">if _, ok := EnvironmentVariables["AC_METADATA_URL"]; ok </span><span class="cov0" title="0">{
+                return runtimeRkt
+        }</span>
+
+        // Check if the AC_APP_NAME environment variable is set to detect an rkt runtime.
+        <span class="cov8" title="1">if _, ok := EnvironmentVariables["AC_APP_NAME"]; ok </span><span class="cov0" title="0">{
+                return runtimeRkt
+        }</span>
+
+        // Check if the /dev/lxd/sock file exists to detect an LXD runtime.
+        <span class="cov8" title="1">if _, err := os.Stat("/dev/lxd/sock"); err == nil </span><span class="cov0" title="0">{
+                return runtimeLXD
+        }</span>
+
+        <span class="cov8" title="1">if isOpenVZ() </span><span class="cov0" title="0">{
+                return runtimeOpenVZ
+        }</span>
+
+        <span class="cov8" title="1">if isWASM() </span><span class="cov0" title="0">{
+                return runtimeWASM
+        }</span>
+
+        // If none of the above checks pass, return an undetermined runtime.
+        <span class="cov8" title="1">return runtimeUndetermined</span>
+}
+
+// isOpenVZ returns true if the program is running inside an OpenVZ container.
+func isOpenVZ() bool <span class="cov8" title="1">{
+        // Check if the /proc/vz directory exists.
+        if _, err := os.Stat("/proc/vz"); err == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isWasm returns true if the program is running inside a WebAssembly environment
+func isWASM() bool <span class="cov8" title="1">{
+        if (os.Getenv("GOOS") == "js") &amp;&amp; (os.Getenv("GOARCH") == "wasm") </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">// Copyright © 2022 Christian R. Vozar ⚜
+// Licensed under the MIT License. All rights reserved.
+
+package criprof
+
+import (
+        "io/ioutil"
+        "net"
+        "net/http"
+        "os"
+        "strings"
+)
+
+const (
+        schedulerKubernetes   = "kubernetes"
+        schedulerNomad        = "nomad"
+        scehdulerMesos        = "mesos"
+        schedulerSwarm        = "swarm"
+        schedulerUndetermined = "undetermined"
+)
+
+// getScheduler returns the identified scheduler, if detected.
+func getScheduler() string <span class="cov8" title="1">{
+        if isKubernetes() </span><span class="cov0" title="0">{
+                return schedulerKubernetes
+        }</span>
+
+        <span class="cov8" title="1">if isNomad() </span><span class="cov0" title="0">{
+                return schedulerNomad
+        }</span>
+
+        <span class="cov8" title="1">if isSwarm() </span><span class="cov0" title="0">{
+                return schedulerSwarm
+        }</span>
+
+        <span class="cov8" title="1">if isMesos() </span><span class="cov0" title="0">{
+                return scehdulerMesos
+        }</span>
+
+        <span class="cov8" title="1">return schedulerUndetermined</span>
+}
+
+// isSwarm returns true if running in Docker Swarm.
+func isSwarm() bool <span class="cov8" title="1">{
+        // Check Docker Swarm port is open to detect if Docker Swarm cluster.
+        conn, err := net.Dial("tcp", "127.0.0.1:2377")
+        if err == nil </span><span class="cov0" title="0">{
+                conn.Close()
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isKubernetes returns true if running in Kubernetes cluster.
+func isKubernetes() bool <span class="cov8" title="1">{
+        // Check if /run/secrets/kubernetes.io/serviceaccount/token file exists.
+        if _, err := os.Stat("/run/secrets/kubernetes.io/serviceaccount/token"); err == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        // Check if KUBERNETES_SERVICE_HOST environment variable is set.
+        <span class="cov8" title="1">if _, ok := EnvironmentVariables["KUBERNETES_SERVICE_HOST"]; ok </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        // Check if Kubernetes API server is accessible.
+        <span class="cov8" title="1">resp, err := http.Get("http://kubernetes.default.svc")
+        if err == nil </span><span class="cov0" title="0">{
+                resp.Body.Close()
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isNomad returns true if running inside a HashiCorp Nomad.
+func isNomad() bool <span class="cov8" title="1">{
+        // Check if the NOMAD_TASK_DIR environment variable is set.
+        if _, ok := os.LookupEnv("NOMAD_TASK_DIR"); ok </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // Check if the HOSTNAME environment variable starts with the prefix "nomad-task-".
+        <span class="cov8" title="1">hostname, err := os.Hostname()
+        if err == nil &amp;&amp; strings.HasPrefix(hostname, "nomad-task-") </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// isMesos returns true if running in a Mesos environment.
+func isMesos() bool <span class="cov8" title="1">{
+        // Check if  MESOS_TASK_ID environment variable is set.
+        if _, ok := EnvironmentVariables["MESOS_TASK_ID"]; ok </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // Check if the MESOS_CONTAINER_NAME environment variable is set.
+        <span class="cov8" title="1">if _, ok := EnvironmentVariables["MESOS_CONTAINER_NAME"]; ok </span><span class="cov8" title="1">{
+                return true
+        }</span>
+
+        // Check if the /proc/1/cgroup file contains the "mesos" string.
+        <span class="cov8" title="1">cgroup, err := ioutil.ReadFile("/proc/1/cgroup")
+        if err == nil &amp;&amp; strings.Contains(string(cgroup), "mesos") </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">// Copyright © 2022-2023 Christian R. Vozar
+// Licensed under the MIT License. All rights reserved.
+
+package criprof
+
+import (
+        "os"
+        "strings"
+)
+
+// environMap converts the os.Environ() slice to a map for efficient lookups.
+// This is an unexported utility function used during package initialization.
+//
+// The function takes the KEY=VALUE pairs from os.Environ() and splits them
+// into a map where keys are environment variable names and values are their
+// corresponding values.
+//
+// Returns a map of environment variable names to values.
+func environMap() map[string]string <span class="cov8" title="1">{
+        env := os.Environ()
+
+        // Create empty map to store environment variables.
+        vars := make(map[string]string)
+
+        for _, pair := range env </span><span class="cov8" title="1">{
+                // Split each string into a key and a value.
+                e := strings.Split(pair, "=")
+                vars[e[0]] = e[1]
+        }</span>
+        <span class="cov8" title="1">return vars</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

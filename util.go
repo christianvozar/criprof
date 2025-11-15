@@ -8,7 +8,14 @@ import (
 	"strings"
 )
 
-// environMap returns the results of os.Environ as a map.
+// environMap converts the os.Environ() slice to a map for efficient lookups.
+// This is an unexported utility function used during package initialization.
+//
+// The function takes the KEY=VALUE pairs from os.Environ() and splits them
+// into a map where keys are environment variable names and values are their
+// corresponding values.
+//
+// Returns a map of environment variable names to values.
 func environMap() map[string]string {
 	env := os.Environ()
 

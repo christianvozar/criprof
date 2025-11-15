@@ -1,5 +1,11 @@
 // Copyright © 2022-2023 Christian R. Vozar
 // Licensed under the MIT License. All rights reserved.
+
+// Package cmd provides the command-line interface for criprof.
+//
+// This package implements the CLI commands using the Cobra framework, allowing
+// users to interact with criprof from the command line to detect and report
+// container runtime information.
 package cmd
 
 import (
@@ -24,8 +30,14 @@ var rootCmd = &cobra.Command{
 	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// Execute runs the root command and handles any errors that occur.
+//
+// This is the main entry point for the CLI application, called by main.main().
+// It executes the root command and all registered subcommands, processing
+// command-line flags and arguments.
+//
+// If an error occurs during command execution, it is printed to stdout and
+// the program exits with status code 1.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -41,7 +53,15 @@ func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// initConfig reads in config file and ENV variables if set.
+// initConfig reads configuration from file and environment variables.
+//
+// This function is called during Cobra initialization. It attempts to load
+// configuration from:
+//   - The config file specified by --config flag
+//   - $HOME/.criprof.yaml (default location)
+//   - Environment variables that match configuration keys
+//
+// If a config file is found and successfully loaded, its path is printed to stdout.
 func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
