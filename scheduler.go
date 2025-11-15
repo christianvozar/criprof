@@ -4,19 +4,23 @@
 package criprof
 
 import (
-	"io/ioutil"
+	"context"
 	"net"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
 	schedulerKubernetes   = "kubernetes"
 	schedulerNomad        = "nomad"
-	scehdulerMesos        = "mesos"
+	schedulerMesos        = "mesos"
 	schedulerSwarm        = "swarm"
 	schedulerUndetermined = "undetermined"
+
+	// Network operation timeout
+	networkTimeout = 2 * time.Second
 )
 
 // getScheduler returns the identified scheduler, if detected.
@@ -34,7 +38,7 @@ func getScheduler() string {
 	}
 
 	if isMesos() {
-		return scehdulerMesos
+		return schedulerMesos
 	}
 
 	return schedulerUndetermined
@@ -43,7 +47,8 @@ func getScheduler() string {
 // isSwarm returns true if running in Docker Swarm.
 func isSwarm() bool {
 	// Check Docker Swarm port is open to detect if Docker Swarm cluster.
-	conn, err := net.Dial("tcp", "127.0.0.1:2377")
+	// Use DialTimeout to avoid hanging indefinitely
+	conn, err := net.DialTimeout("tcp", "127.0.0.1:2377", networkTimeout)
 	if err == nil {
 		conn.Close()
 		return true
@@ -64,8 +69,16 @@ func isKubernetes() bool {
 		return true
 	}
 
-	// Check if Kubernetes API server is accessible.
-	resp, err := http.Get("http://kubernetes.default.svc")
+	// Check if Kubernetes API server is accessible with timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), networkTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://kubernetes.default.svc", nil)
+	if err != nil {
+		return false
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err == nil {
 		resp.Body.Close()
 		return true
@@ -77,7 +90,8 @@ func isKubernetes() bool {
 // isNomad returns true if running inside a HashiCorp Nomad.
 func isNomad() bool {
 	// Check if the NOMAD_TASK_DIR environment variable is set.
-	if _, ok := os.LookupEnv("NOMAD_TASK_DIR"); ok {
+	// Use cached EnvironmentVariables for consistency
+	if _, ok := EnvironmentVariables["NOMAD_TASK_DIR"]; ok {
 		return true
 	}
 
@@ -103,7 +117,7 @@ func isMesos() bool {
 	}
 
 	// Check if the /proc/1/cgroup file contains the "mesos" string.
-	cgroup, err := ioutil.ReadFile("/proc/1/cgroup")
+	cgroup, err := os.ReadFile("/proc/1/cgroup")
 	if err == nil && strings.Contains(string(cgroup), "mesos") {
 		return true
 	}
