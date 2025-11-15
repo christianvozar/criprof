@@ -72,9 +72,9 @@
 package criprof
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 )
 
 // EnvironmentVariables is a cached map of all environment variables available at
@@ -124,13 +124,15 @@ type Inventory struct {
 // New creates and returns a new Inventory with all fields automatically populated
 // based on the current container environment.
 //
-// This function performs comprehensive detection of the container runtime, orchestration
-// platform, image format, and system identifiers. Detection is non-invasive and uses
-// multiple hints including file system markers, environment variables, process information,
-// and network probes.
+// This function uses the new detector-based engine for improved performance and
+// extensibility. Detection is non-invasive and uses multiple hints including file
+// system markers, environment variables, process information, and network probes.
 //
 // The function will gracefully handle detection failures by setting undetermined values
 // rather than returning errors, making it safe to use in any environment.
+//
+// For advanced usage with timeouts or custom detectors, see NewWithContext() and
+// NewWithEngine().
 //
 // Example:
 //
@@ -142,26 +144,7 @@ type Inventory struct {
 // Returns:
 //   - A pointer to a fully populated Inventory struct
 func New() *Inventory {
-	// Get image format, default to "undetermined" on error
-	imageFormat, err := getImageFormat()
-	if err != nil {
-		imageFormat = "undetermined"
-	}
-
-	// Get hostname, default to "unknown" on error
-	hostname, err := getHostname()
-	if err != nil {
-		hostname = "unknown"
-	}
-
-	return &Inventory{
-		Hostname:    hostname,
-		ID:          getContainerID(),
-		ImageFormat: imageFormat,
-		PID:         os.Getpid(),
-		Runtime:     getRuntime(),
-		Scheduler:   getScheduler(),
-	}
+	return NewWithContext(context.Background())
 }
 
 // JSON serializes the Inventory to a JSON-formatted string.
