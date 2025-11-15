@@ -4,8 +4,8 @@
 package criprof
 
 import (
-	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -41,8 +41,8 @@ func getRuntime() string {
 	}
 
 	// Check the cgroup to detect a Docker runtime.
-	cgroup, _ := ioutil.ReadFile("/proc/self/cgroup")
-	if strings.Contains(string(cgroup), "docker") {
+	// Use getCgroupContent() from container.go to avoid duplicate file reads
+	if cgroupContent := getCgroupContent(); cgroupContent != "" && strings.Contains(cgroupContent, "docker") {
 		return runtimeDocker
 	}
 
@@ -83,11 +83,7 @@ func isOpenVZ() bool {
 	return false
 }
 
-// isWasm returns true if the program is running inside a WebAssembly environment
+// isWASM returns true if the program is compiled for WebAssembly
 func isWASM() bool {
-	if (os.Getenv("GOOS") == "js") && (os.Getenv("GOARCH") == "wasm") {
-		return true
-	}
-
-	return false
+	return runtime.GOOS == "js" && runtime.GOARCH == "wasm"
 }
