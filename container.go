@@ -5,10 +5,25 @@ package criprof
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 )
+
+var (
+	// Compiled regexes for container ID extraction
+	dockerIDRegex  = regexp.MustCompile(`cpu:/docker/([0-9a-z]+)`)
+	coreOSIDRegex  = regexp.MustCompile(`cpuset:/system\.slice/docker-([0-9a-z]+)`)
+)
+
+// getCgroupContent reads and caches the content of /proc/self/cgroup.
+// Returns the content as a string, or an empty string if the file cannot be read.
+func getCgroupContent() string {
+	data, err := os.ReadFile("/proc/self/cgroup")
+	if err != nil {
+		return ""
+	}
+	return string(data)
+}
 
 // IsContainer determines whether the current application is running inside a
 // container runtime or engine.
@@ -41,7 +56,7 @@ func IsContainer() bool {
 		return true
 	}
 
-	if c := getContainerID(); c != "" {
+	if c := getContainerID(); c != "undetermined" {
 		return true
 	}
 
@@ -58,24 +73,19 @@ func IsContainer() bool {
 //
 // Returns "undetermined" if the container ID cannot be extracted.
 func getContainerID() string {
-	dockerIDMatch := regexp.MustCompile(`cpu\:\/docker\/([0-9a-z]+)`)
-	coreOSIDMatch := regexp.MustCompile(`cpuset\:\/system.slice\/docker-([0-9a-z]+)`)
+	cgroupContent := getCgroupContent()
+	if cgroupContent == "" {
+		return "undetermined"
+	}
 
-	if _, err := os.Stat("/proc/self/cgroup"); os.IsExist(err) {
-		cgroup, _ := ioutil.ReadFile("/proc/self/cgroup")
-		strCgroup := string(cgroup)
-		loc := dockerIDMatch.FindStringIndex(strCgroup)
+	// Try standard Docker format using capture group
+	if matches := dockerIDRegex.FindStringSubmatch(cgroupContent); matches != nil && len(matches) > 1 {
+		return matches[1]
+	}
 
-		if loc != nil {
-			return strCgroup[loc[0]+12 : loc[1]-2]
-		}
-
-		// cgroup not nil, not vanilla Docker. Check for CoreOS.
-		loc = coreOSIDMatch.FindStringIndex(strCgroup)
-
-		if loc != nil {
-			return strCgroup[loc[0]+27:]
-		}
+	// Try CoreOS format using capture group
+	if matches := coreOSIDRegex.FindStringSubmatch(cgroupContent); matches != nil && len(matches) > 1 {
+		return matches[1]
 	}
 
 	return "undetermined"
