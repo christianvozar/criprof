@@ -4,7 +4,6 @@
 package criprof
 
 import (
-	"os"
 	"testing"
 )
 
@@ -20,7 +19,7 @@ func TestGetScheduler(t *testing.T) {
 	validSchedulers := map[string]bool{
 		schedulerKubernetes:   true,
 		schedulerNomad:        true,
-		scehdulerMesos:        true,
+		schedulerMesos:        true,
 		schedulerSwarm:        true,
 		schedulerUndetermined: true,
 	}
@@ -65,9 +64,14 @@ func TestIsNomad(t *testing.T) {
 		{
 			name: "detects Nomad from NOMAD_TASK_DIR",
 			setup: func() func() {
-				os.Setenv("NOMAD_TASK_DIR", "/tmp/nomad")
+				// Since isNomad() now uses the cached EnvironmentVariables map,
+				// we need to update that instead of setting environment variables
+				origEnv := EnvironmentVariables
+				EnvironmentVariables = map[string]string{
+					"NOMAD_TASK_DIR": "/tmp/nomad",
+				}
 				return func() {
-					os.Unsetenv("NOMAD_TASK_DIR")
+					EnvironmentVariables = origEnv
 				}
 			},
 			expected: true,
@@ -150,7 +154,7 @@ func TestSchedulerConstants(t *testing.T) {
 	schedulers := map[string]string{
 		"kubernetes":   schedulerKubernetes,
 		"nomad":        schedulerNomad,
-		"mesos":        scehdulerMesos,
+		"mesos":        schedulerMesos,
 		"swarm":        schedulerSwarm,
 		"undetermined": schedulerUndetermined,
 	}
