@@ -142,13 +142,22 @@ type Inventory struct {
 // Returns:
 //   - A pointer to a fully populated Inventory struct
 func New() *Inventory {
-	f, _ := getImageFormat()
-	h, _ := getHostname()
+	// Get image format, default to "undetermined" on error
+	imageFormat, err := getImageFormat()
+	if err != nil {
+		imageFormat = "undetermined"
+	}
+
+	// Get hostname, default to "unknown" on error
+	hostname, err := getHostname()
+	if err != nil {
+		hostname = "unknown"
+	}
 
 	return &Inventory{
-		Hostname:    h,
+		Hostname:    hostname,
 		ID:          getContainerID(),
-		ImageFormat: f,
+		ImageFormat: imageFormat,
 		PID:         os.Getpid(),
 		Runtime:     getRuntime(),
 		Scheduler:   getScheduler(),
@@ -161,8 +170,9 @@ func New() *Inventory {
 // export container environment information for logging, diagnostics, or integration
 // with other tools.
 //
-// If JSON marshaling fails (which is extremely rare for this struct), an error
-// message is printed to stdout and an empty string is returned.
+// JSON marshaling of the Inventory struct should never fail in practice since all
+// fields are simple types. If it does fail (which would indicate a serious issue),
+// the method panics rather than silently returning empty data.
 //
 // Example:
 //
@@ -172,12 +182,13 @@ func New() *Inventory {
 //	// Output: {"hostname":"web-server","id":"abc123","image_format":"docker","pid":1234,"runtime":"docker","scheduler":"kubernetes"}
 //
 // Returns:
-//   - A JSON-formatted string representation of the Inventory, or an empty string on error
+//   - A JSON-formatted string representation of the Inventory
 func (i Inventory) JSON() string {
 	j, err := json.Marshal(i)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		// This should never happen with simple struct types
+		// If it does, it indicates a serious problem that should not be hidden
+		panic(fmt.Sprintf("failed to marshal Inventory to JSON: %v", err))
 	}
 
 	return string(j)
