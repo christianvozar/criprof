@@ -64,10 +64,17 @@ func DefaultDetectors() []Detector {
 		// Runtime detectors (priority 100-80)
 		&DockerFileDetector{fs: fs},
 		&DockerCgroupDetector{fs: fs},
+		&PodmanDetector{fs: fs},
+		&CRIODetector{fs: fs},
 		&ContainerdFileDetector{fs: fs},
 		&RktEnvDetector{},
 		&LXDSocketDetector{fs: fs},
 		&OpenVZDetector{fs: fs},
+		&FirecrackerDetector{fs: fs},
+		&KataContainersDetector{fs: fs},
+		&GVisorDetector{fs: fs},
+		&SysboxDetector{fs: fs},
+		&SingularityDetector{},
 		&WASMDetector{},
 
 		// Scheduler detectors (priority 95-80)
@@ -77,6 +84,11 @@ func DefaultDetectors() []Detector {
 		&NomadHostnameDetector{},
 		&MesosEnvDetector{},
 		&MesosCgroupDetector{fs: fs},
+		&ECSDetector{},
+		&FargateDetector{},
+		&CloudRunDetector{},
+		&LambdaContainerDetector{},
+		&ACIDetector{},
 
 		// Network detectors (priority 20-10)
 		&SwarmPortDetector{network: net, timeout: timeout},
@@ -86,6 +98,8 @@ func DefaultDetectors() []Detector {
 		&DockerImageDetector{fs: fs},
 		&CRIImageDetector{fs: fs},
 		&ACIEnvDetector{},
+		&OCIImageDetector{fs: fs},
+		&SingularityImageDetector{},
 	}
 }
 
@@ -103,10 +117,17 @@ func FastDetectors() []Detector {
 		// Runtime detectors
 		&DockerFileDetector{fs: fs},
 		&DockerCgroupDetector{fs: fs},
+		&PodmanDetector{fs: fs},
+		&CRIODetector{fs: fs},
 		&ContainerdFileDetector{fs: fs},
 		&RktEnvDetector{},
 		&LXDSocketDetector{fs: fs},
 		&OpenVZDetector{fs: fs},
+		&FirecrackerDetector{fs: fs},
+		&KataContainersDetector{fs: fs},
+		&GVisorDetector{fs: fs},
+		&SysboxDetector{fs: fs},
+		&SingularityDetector{},
 		&WASMDetector{},
 
 		// Scheduler detectors (no network)
@@ -116,11 +137,18 @@ func FastDetectors() []Detector {
 		&NomadHostnameDetector{},
 		&MesosEnvDetector{},
 		&MesosCgroupDetector{fs: fs},
+		&ECSDetector{},
+		&FargateDetector{},
+		&CloudRunDetector{},
+		&LambdaContainerDetector{},
+		&ACIDetector{},
 
 		// Image format detectors
 		&DockerImageDetector{fs: fs},
 		&CRIImageDetector{fs: fs},
 		&ACIEnvDetector{},
+		&OCIImageDetector{fs: fs},
+		&SingularityImageDetector{},
 	}
 }
 
